@@ -1,10 +1,27 @@
-
 import streamlit as st
 import pandas as pd
 import pickle
 import requests
+import gdown  # for Google Drive downloads
+import os
 
 st.set_page_config(page_title="🎬 Movie Recommender", page_icon="🎥", layout="wide")
+
+# ---------------- Google Drive URLs -----------------
+SIMILARITY_FILE_ID = "1S20xVJJsxkeXpVRc9bbXUVjEqsZltUuu"
+MOVIES_FILE_ID = "1HzB4SqVoQtRYLcvrkj_ws_ldX8i2v2jj"
+
+# Download .pkl files from Google Drive at runtime
+if not os.path.exists("similarity.pkl"):
+    gdown.download(f"https://drive.google.com/uc?id={SIMILARITY_FILE_ID}", "similarity.pkl", quiet=False)
+
+if not os.path.exists("movies_dict.pkl"):
+    gdown.download(f"https://drive.google.com/uc?id={MOVIES_FILE_ID}", "movies_dict.pkl", quiet=False)
+
+# ---------------- Load Data -----------------
+movies_dict = pickle.load(open('movies_dict.pkl', 'rb'))
+movies = pd.DataFrame(movies_dict)
+similarity = pickle.load(open('similarity.pkl','rb'))
 
 # ---------------- API Fetch -----------------
 def fetch_movie_details(movie_id):
@@ -29,11 +46,6 @@ def recommend(movie):
         poster, overview, rating = fetch_movie_details(movie_id)
         recommendations.append((title, poster, overview, rating))
     return recommendations
-
-# ---------------- Load Data -----------------
-movies_dict = pickle.load(open('movies_dict.pkl', 'rb'))
-movies = pd.DataFrame(movies_dict)
-similarity = pickle.load(open('similarity.pkl','rb'))
 
 # ---------------- UI -----------------
 st.markdown(
